@@ -11,7 +11,7 @@ class UserChatsListView(LoginRequiredMixin, generic.ListView):
     template_name = 'chat/index.html'
 
 
-def room(request, room_id):
+def room(request, chat_id):
     return render(request, 'chat/room.html', {
-        'room_id': room_id
+        'chat_id': chat_id
     })

@@ -11,10 +11,14 @@ from . import models
 
 
 @database_sync_to_async
-def get_user_chat(pk, user):
+def get_user_chat(pk: int, user) -> models.Chat:
     chat = models.Chat.objects.get(id=pk, clients=user)
     return chat
 
+
+@database_sync_to_async
+def add_message_to_the_chat(chat_id: int, text: str, user):
+    models.Message.objects.create(chat_id=chat_id, text=text, sender=user)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     chat_group_name = None
@@ -24,7 +28,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if self.scope['user'] == AnonymousUser():
             raise DenyConnection("Такого пользователя не существует")
 
-        self.chat_id = self.scope['url_route']['kwargs']['room_id']
+        self.chat_id = self.scope['url_route']['kwargs']['chat_id']
 
         try:
             chat = await get_user_chat(pk=self.chat_id, user=self.scope['user'])
@@ -52,6 +56,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
         username = str(self.scope['user'])
+
+        await add_message_to_the_chat(chat_id=self.chat_id, text=message, user=self.scope['user'])
+
         user = {
             'username': username
         }
