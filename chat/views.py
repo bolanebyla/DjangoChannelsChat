@@ -12,6 +12,8 @@ class UserChatsListView(LoginRequiredMixin, generic.ListView):
 
 
 def room(request, chat_id):
+    messages = models.Message.objects.filter(chat_id=chat_id)
     return render(request, 'chat/room.html', {
-        'chat_id': chat_id
+        'chat_id': chat_id,
+        'messages': messages
     })

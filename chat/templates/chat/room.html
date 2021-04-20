@@ -6,11 +6,18 @@
 
 
 {% block content %}
-    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <div id="message-list" class="scrollbar mt-5">
+        {% for message in messages %}
+            <div>{{ message.sender }}: {{ message.text }}</div>
+        {% endfor %}
+    </div>
     <input id="chat-message-input" type="text" size="100"><br>
     <input id="chat-message-submit" type="button" value="Send">
     {{ chat_id|json_script:"room-name" }}
     <script>
+        let message_list = document.getElementById('message-list');
+        message_list.scrollTop = message_list.scrollHeight;
+
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
         const chatSocket = new WebSocket(
@@ -24,7 +31,12 @@
         chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
             console.log(data)
-            document.querySelector('#chat-log').value += (data.user.username +': ' + data.message + '\n');
+            let message = document.createElement('div');
+            message.className = 'message';
+            message.innerHTML = data.user.username + ': ' + data.message;
+            let message_list = document.getElementById('message-list');
+            message_list.append(message);
+            message_list.scrollTop = message_list.scrollHeight;
         };
 
         chatSocket.onopen = function () {
