@@ -20,6 +20,7 @@ def get_user_chat(pk: int, user) -> models.Chat:
 def add_message_to_the_chat(chat_id: int, text: str, user):
     models.Message.objects.create(chat_id=chat_id, text=text, sender=user)
 
+
 class ChatConsumer(AsyncWebsocketConsumer):
     chat_group_name = None
     chat_id = None
@@ -55,6 +56,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
+
+        if not message:
+            return
+
         username = str(self.scope['user'])
 
         await add_message_to_the_chat(chat_id=self.chat_id, text=message, user=self.scope['user'])
