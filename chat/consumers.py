@@ -1,36 +1,49 @@
 import json
+
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.exceptions import DenyConnection
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import AnonymousUser
 
+from . import models
+
+
+@database_sync_to_async
+def get_user_chat(pk, user):
+    chat = models.Chat.objects.get(id=pk, clients=user)
+    return chat
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
-        print(self.room_name)
-        print(self.room_group_name)
+    chat_group_name = None
+    chat_id = None
 
+    async def connect(self):
         if self.scope['user'] == AnonymousUser():
             raise DenyConnection("Такого пользователя не существует")
 
-        user = self.scope['user']
-        print(user)
+        self.chat_id = self.scope['url_route']['kwargs']['room_id']
 
-        # Join room group
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
+        try:
+            chat = await get_user_chat(pk=self.chat_id, user=self.scope['user'])
+            self.chat_group_name = f'chat_{chat.id}'
 
-        await self.accept()
+            # Join room group
+            await self.channel_layer.group_add(
+                self.chat_group_name,
+                self.channel_name
+            )
+            await self.accept()
+
+        except ObjectDoesNotExist:
+            await self.close()
 
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(
-            self.room_group_name,
+            self.chat_group_name,
             self.channel_name
         )
 
@@ -45,7 +58,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Send message to room group
         await self.channel_layer.group_send(
-            self.room_group_name,
+            self.chat_group_name,
             {
                 'type': 'chat_message',
                 'message': message,
