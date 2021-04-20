@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8"/>
-    <title>Chat Room</title>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}
+    Chat Room
+{% endblock %}
+
+
+{% block content %}
     <textarea id="chat-log" cols="100" rows="20"></textarea><br>
     <input id="chat-message-input" type="text" size="100"><br>
     <input id="chat-message-submit" type="button" value="Send">
@@ -20,23 +21,36 @@
             + '/'
         );
 
-        chatSocket.onmessage = function(e) {
+        chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
             document.querySelector('#chat-log').value += (data.message + '\n');
         };
 
-        chatSocket.onclose = function(e) {
+        chatSocket.onopen = function () {
+            alert("Соединение установлено.");
+        };
+
+        chatSocket.onclose = function (event) {
             console.error('Chat socket closed unexpectedly');
+            {#alert("Chat socket closed unexpectedly");#}
+
+            if (event.wasClean) {
+                alert('Соединение закрыто чисто');
+            } else {
+                alert('Обрыв соединения'); // например, "убит" процесс сервера
+            }
+            alert('Код: ' + event.code + ' причина: ' + event.reason);
+
         };
 
         document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
+        document.querySelector('#chat-message-input').onkeyup = function (e) {
             if (e.keyCode === 13) {  // enter, return
                 document.querySelector('#chat-message-submit').click();
             }
         };
 
-        document.querySelector('#chat-message-submit').onclick = function(e) {
+        document.querySelector('#chat-message-submit').onclick = function (e) {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             chatSocket.send(JSON.stringify({
@@ -45,5 +59,4 @@
             messageInputDom.value = '';
         };
     </script>
-</body>
-</html>
+{% endblock %}
