@@ -1,6 +1,6 @@
 <nav class="navbar sticky-top navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">Django Channels Chat</a>
+        <a class="navbar-brand" href="">Django Channels Chat</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -10,14 +10,19 @@
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="/chat/">Chat list</a>
                 </li>
-            </ul>
-            <div class="pull-right">
-                {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/admin/">Admin panel</a>
+                    </li>
+                {% endif %}
 
+            </ul>
+            <div class="pull-right me-4">
+                {% if user.is_authenticated %}
                     <div class="nav-item dropdown ">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ profile.user }} ({{ profile.role }})
+                            {{ user }}
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="#">Профиль</a></li>
