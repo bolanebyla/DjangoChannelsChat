@@ -27,20 +27,18 @@
         };
 
         chatSocket.onopen = function () {
-            alert("Соединение установлено.");
+            console.log("Соединение установлено.");
         };
 
         chatSocket.onclose = function (event) {
             console.error('Chat socket closed unexpectedly');
-            {#alert("Chat socket closed unexpectedly");#}
-
             if (event.wasClean) {
-                alert('Соединение закрыто чисто');
+                console.log('Соединение закрыто чисто');
             } else {
-                alert('Обрыв соединения'); // например, "убит" процесс сервера
+                console.error('Обрыв соединения');
             }
-            alert('Код: ' + event.code + ' причина: ' + event.reason);
-
+            console.error('Код: ' + event.code + ' причина: ' + event.reason);
+            location.replace('/')
         };
 
         document.querySelector('#chat-message-input').focus();
