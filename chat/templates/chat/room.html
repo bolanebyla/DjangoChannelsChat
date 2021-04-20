@@ -68,6 +68,8 @@
                 'message': message
             }));
             messageInputDom.value = '';
+            let message_list = document.getElementById('message-list');
+            message_list.scrollTop = message_list.scrollHeight;
         };
     </script>
 {% endblock %}
